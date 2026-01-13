@@ -65,7 +65,7 @@ const Home: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">제출 기한</h3>
-                <p className="text-sm text-slate-500">2025.01.20(월) 까지</p>
+                <p className="text-sm text-slate-500">2025.01.20(화) 까지</p>
               </div>
             </div>
             <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start space-x-4">
