@@ -172,7 +172,7 @@ const AdminPage: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">업무 강도</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">키워드 (Q2)</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">올해 목표</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">건의사항 (Q4)</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">바라는 점 (Q4)</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">기타 의견 (Q5)</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">관리</th>
               </tr>
