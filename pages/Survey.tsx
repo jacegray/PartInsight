@@ -303,7 +303,7 @@ const SurveyPage: React.FC = () => {
             <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
               <div className="flex items-center space-x-2 mb-2 text-indigo-600 text-sm font-semibold ml-1">
                 <MessageCircle className="w-4 h-4" />
-                <span>건의사항을 구체적으로 입력해주세요</span>
+                <span>기타사항을 구체적으로 입력해주세요</span>
               </div>
               <input
                 type="text"
