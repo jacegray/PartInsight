@@ -112,3 +112,21 @@ ON public.survey_responses FOR UPDATE
 TO authenticated 
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
+
+-- 사용자가 자신의 응답을 수정할 수 있도록 허용
+CREATE POLICY "Users can update their own responses" 
+ON public.survey_responses FOR UPDATE 
+USING (auth.uid() = user_id);
+
+
+-- 1. 혹시 이미 중복된 데이터가 있다면 하나만 남기고 삭제 (제약 조건 생성 전 필수 작업)
+DELETE FROM public.survey_responses
+WHERE id NOT IN (
+    SELECT MIN(id)
+    FROM public.survey_responses
+    GROUP BY user_id
+);
+
+-- 2. user_id 컬럼에 UNIQUE 제약 조건 추가
+ALTER TABLE public.survey_responses 
+ADD CONSTRAINT survey_responses_user_id_key UNIQUE (user_id);
