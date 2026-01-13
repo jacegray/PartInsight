@@ -102,3 +102,13 @@ ON public.survey_responses
 FOR DELETE
 TO authenticated
 USING (true);
+
+
+-- 1. 기존 가입된 유저가 자신의 데이터를 수정(Update)할 수 있도록 허용
+DROP POLICY IF EXISTS "Users can update their own responses" ON public.survey_responses;
+
+CREATE POLICY "Users can update their own responses" 
+ON public.survey_responses FOR UPDATE 
+TO authenticated 
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);

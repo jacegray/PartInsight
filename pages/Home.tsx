@@ -86,7 +86,7 @@ const Home: React.FC = () => {
                   <CheckCircle2 className="w-8 h-8 text-green-600" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-900">설문 제출 완료</h2>
-                <p className="text-slate-500">설문조사에 참여해 주셔서 감사합니다. 면담 일정은 추후 개별 안내 드리겠습니다.</p>
+                <p className="text-slate-500">설문조사에 참여해 주셔서 감사합니다.</p>
                 <Link
                   to="/survey"
                   className="inline-flex items-center space-x-2 text-indigo-600 font-medium hover:underline pt-4"
