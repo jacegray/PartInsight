@@ -30,7 +30,7 @@ export const SURVEY_QUESTIONS = {
   q5: {
     id: 'q5',
     label: '그 밖에 하고 싶은 말',
-    placeholder: '배우고 싶은 기술, 기억나는 업무, 건의사항 등 자유롭게 적어주세요. (선택 사항)',
+    placeholder: '건의사항, 배우고 싶은 기술, 기억나는 업무, 건의사항 등 자유롭게 적어주세요. (선택 사항)',
     type: 'textarea'
   }
 };

@@ -10,7 +10,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1uwMbiaKA1ysQxiGsk0Ic1B
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:**  Node.js version : 22.21.1
 
 
 1. Install dependencies:

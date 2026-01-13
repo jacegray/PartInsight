@@ -13,24 +13,34 @@ const AdminPage: React.FC = () => {
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   const fetchResponses = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('survey_responses')
-        .select(`
-          *,
-          profiles:user_id (name, email)
-        `)
-        .order('created_at', { ascending: false });
+  if (!silent) setLoading(true);
+  try {
+    const { data, error } = await supabase
+      .from('survey_responses')
+      .select(`
+        id,
+        q1, q2, q3, q4, q5,
+        created_at,
+        user_id,
+        profiles (
+          name,
+          email
+        )
+      `) // profiles:user_id 대신 profiles로만 적어보세요 (Supabase가 외래키를 자동 인식함)
+      .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      if (data) setResponses(data as any);
-    } catch (err) {
-      console.error('Admin Fetch Error:', err);
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, []);
+    if (error) throw error;
+    
+    // 데이터가 제대로 들어오는지 확인용 로그
+    console.log("Fetched Data:", data); 
+    
+    if (data) setResponses(data as any);
+  } catch (err) {
+    console.error('Admin Fetch Error:', err);
+  } finally {
+    if (!silent) setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     fetchResponses();

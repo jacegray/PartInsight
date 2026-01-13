@@ -54,29 +54,19 @@ const LoginPage: React.FC = () => {
           email: internalEmail, 
           password,
           options: { 
-            data: { name: name.trim() },
-            emailRedirectTo: window.location.origin 
+            // DB 컬럼명이 'name'이므로 여기도 'name'으로 맞춥니다.
+            data: { name: name.trim() } 
           }
         });
         
-        if (signUpError) {
-          if (signUpError.message.includes('already registered')) {
-            setError('이미 등록된 이름입니다. 로그인 모드에서 로그인을 진행해주세요.');
-            setIsLogin(true);
-            setLoading(false);
-            return;
-          }
-          if (signUpError.message.toLowerCase().includes('disabled') || signUpError.status === 403) {
-            setSignupDisabled(true);
-            throw new Error('Supabase 설정에서 이메일 가입 기능이 비활성화되어 있습니다.');
-          }
-          throw signUpError;
-        }
+        if (signUpError) throw signUpError;
 
         if (signUpData.user) {
-          await supabase.from('profiles').upsert([
+          const { error: profileError } = await supabase.from('profiles').upsert([
             { id: signUpData.user.id, email: internalEmail, name: name.trim() }
           ]);
+          
+          if (profileError) console.error("Profile 생성 실패:", profileError.message);
         }
 
         if (!signUpData.session) {

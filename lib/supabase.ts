@@ -1,8 +1,11 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://atkyzovudqvehiydfppw.supabase.co';
-const supabaseAnonKey = 'sb_publishable_rRcKiigkbjIkTUozqHiHdQ_dxKUtk2k';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// 점검을 위한 로그 추가: 브라우저 콘솔에서 확인 가능합니다.
+console.log("URL 연결 확인:", supabaseUrl);
+console.log("Key 존재 여부:", !!supabaseAnonKey); 
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

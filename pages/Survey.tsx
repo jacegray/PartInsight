@@ -323,7 +323,7 @@ const SurveyPage: React.FC = () => {
             <span className="bg-indigo-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">5</span>
             {SURVEY_QUESTIONS.q5.label}
           </h2>
-          <p className="text-sm text-slate-500 mb-6 ml-9">배우고 싶은 기술, 기억나는 업무 등 자유롭게 적어주세요. (선택)</p>
+          <p className="text-sm text-slate-500 mb-6 ml-9">건의사항, 배우고 싶은 기술, 기억나는 업무 등 자유롭게 적어주세요. (선택)</p>
           <textarea
             value={answers.q5}
             onChange={(e) => setAnswers({ ...answers, q5: e.target.value })}
