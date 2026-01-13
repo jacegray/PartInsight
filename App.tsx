@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import { supabase } from './lib/supabase';
@@ -27,22 +26,40 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchProfile = async (userId: string) => {
+  // 사용자 및 프로필 상태를 업데이트하는 함수 (백그라운드 실행용)
+  const updateUserStates = async (currentUser: any) => {
+    if (!currentUser) {
+      setUser(null);
+      setProfile(null);
+      setRole('USER');
+      return;
+    }
+
+    setUser(currentUser);
+    setRole(currentUser.email === ADMIN_EMAIL ? 'ADMIN' : 'USER');
+
     try {
+      // 1. 가입 시 저장한 메타데이터가 있다면 즉시 프로필에 임시 반영 (이름 깨짐 방지)
+      if (currentUser.user_metadata?.name || currentUser.user_metadata?.full_name) {
+        setProfile({
+          name: currentUser.user_metadata.name || currentUser.user_metadata.full_name,
+          email: currentUser.email,
+          id: currentUser.id,
+        } as Profile);
+      }
+
+      // 2. 실제 DB에서 최신 프로필 정보 가져오기
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('id', currentUser.id)
         .maybeSingle();
       
-      if (error) {
-        console.error('Profile Fetch Error:', error);
-        return null;
+      if (!error && data) {
+        setProfile(data);
       }
-      return data;
     } catch (e) {
-      console.error('fetchProfile exception:', e);
-      return null;
+      console.error('Profile fetch background failed:', e);
     }
   };
 
@@ -52,39 +69,35 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     const initAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!isMounted) return;
-
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        
-        if (currentUser) {
-          setRole(currentUser.email === ADMIN_EMAIL ? 'ADMIN' : 'USER');
-          const profileData = await fetchProfile(currentUser.id);
-          if (isMounted) setProfile(profileData);
+        if (isMounted) {
+          if (session?.user) {
+            // [중요] await를 붙이지 않습니다. 프로필 조회를 기다리지 않고 로딩을 풉니다.
+            updateUserStates(session.user); 
+          }
         }
       } catch (err) {
-        console.error('Auth initialization error:', err);
+        console.error('Auth init error:', err);
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) {
+          console.log("Auth initialized. Releasing loader.");
+          setIsLoading(false); // 무조건 실행되어 무한 로딩 방지
+        }
       }
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth Event Trace:", event);
       if (!isMounted) return;
 
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (currentUser) {
-        setRole(currentUser.email === ADMIN_EMAIL ? 'ADMIN' : 'USER');
-        const profileData = await fetchProfile(currentUser.id);
-        if (isMounted) setProfile(profileData);
+      if (session?.user) {
+        updateUserStates(session.user); // await 제거
       } else {
-        setProfile(null);
-        setRole('USER');
+        updateUserStates(null);
       }
+      
+      // 세션 관련 이벤트가 발생했다는 것은 로딩을 끝내도 된다는 신호입니다.
       setIsLoading(false);
     });
 
@@ -95,20 +108,15 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }, []);
 
   const signOut = async () => {
-    setIsLoading(true);
     try {
-      // 1. Supabase 로그아웃 실행
+      setIsLoading(true);
       await supabase.auth.signOut();
-    } catch (err) {
-      console.error('Sign out error:', err);
-    } finally {
-      // 2. 서버 응답 여부와 관계없이 로컬 상태 강제 초기화
-      setUser(null);
-      setProfile(null);
-      setRole('USER');
-      setIsLoading(false);
-      // 3. 로그인 페이지로 즉시 이동 (Replace를 사용하여 히스토리 방지)
+      updateUserStates(null);
       navigate('/login', { replace: true });
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,6 +131,9 @@ const Navbar: React.FC = () => {
   const { user, profile, role, signOut } = useUser();
 
   if (!user) return null;
+
+  // 이름 표시 우선순위 (ueca1b... 방지)
+  const displayName = profile?.name || user.user_metadata?.name || user.user_metadata?.full_name || "사용자";
 
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
@@ -143,12 +154,11 @@ const Navbar: React.FC = () => {
             )}
             <div className="flex items-center space-x-2 text-slate-700 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
               <User className="w-4 h-4 text-slate-400" />
-              <span className="text-xs font-medium">{profile?.name || user.email?.split('@')[0] || '사용자'}</span>
+              <span className="text-xs font-bold text-indigo-600">{displayName}</span>
             </div>
             <button
               onClick={signOut}
               className="text-slate-500 hover:text-red-600 transition-colors p-2 focus:outline-none"
-              title="로그아웃"
             >
               <LogOut className="w-5 h-5" />
             </button>
@@ -162,12 +172,13 @@ const Navbar: React.FC = () => {
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roleRequired?: UserRole }> = ({ children, roleRequired }) => {
   const { user, role, isLoading } = useUser();
 
+  // isLoading이 true인 동안에만 이 화면이 보입니다.
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-          <p className="text-slate-500 font-medium animate-pulse">정보를 불러오는 중입니다...</p>
+          <p className="text-slate-500 font-medium animate-pulse">인증 세션을 확인 중입니다...</p>
         </div>
       </div>
     );
