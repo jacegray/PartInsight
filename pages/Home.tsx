@@ -28,6 +28,7 @@ const Home: React.FC = () => {
 
   // 현재 로그인한 사용자가 'admin'인지 확인
   const isAdmin = profile?.name === 'admin' || user?.user_metadata?.name === 'admin';
+  const isMultiChoice = true;
 
   useEffect(() => {
     let isMounted = true;
@@ -49,7 +50,7 @@ const Home: React.FC = () => {
         if (isMounted) setHasResponded(!!myResponse);
 
         // 2. 관리자(admin)일 때만 통계 데이터 가져오기
-        if (isAdmin) {
+        if (isAdmin || isMultiChoice) {
           const { data: allResponses, error: statsError } = await supabase
             .from('survey_responses')
             .select('q1, q2, q3, q4, q5');
@@ -126,7 +127,7 @@ const Home: React.FC = () => {
 
     fetchData();
     return () => { isMounted = false; };
-  }, [user, isAdmin]); // isAdmin 조건 추가
+  }, [user, isAdmin, isMultiChoice]); // isAdmin 조건 추가
 
   const StatCard = ({ title, icon: Icon, data, colorClass }: { title: string, icon: any, data: StatItem[], colorClass: string }) => (
     <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
@@ -207,8 +208,8 @@ const Home: React.FC = () => {
                 <p className="text-slate-500 font-medium">참여해주셔서 감사합니다. {isAdmin ? '실시간 통계를 확인하세요.' : ''}</p>
               </div>
 
-              {/* 통계 그리드: isAdmin일 때만 노출 */}
-              {isAdmin && allStats ? (
+              {/* 통계 그리드: isAdmin일 때만 노출 or 객관형 노출(isMultiChoice) 허용 일 때 */}
+              {isAdmin && allStats || isMultiChoice ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <StatCard title="현재 느끼는 업무 강도" icon={Activity} data={allStats.q1} colorClass="text-rose-500" />
                   <StatCard title="지난해 기억에 남는 키워드" icon={BarChart3} data={allStats.q2} colorClass="text-indigo-600" />
